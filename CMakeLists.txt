@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(Filters
+project(Project
 		DESCRIPTION "Filters"
 		LANGUAGES CXX)
 		
@@ -14,4 +14,4 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ROOT_PATH}/bld)
 
 add_definitions(-D__ENABLE_TEST_CODE__)
 
-add_subdirectory(kalmanfilter)
+add_subdirectory(filters)

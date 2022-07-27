@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.11)
+
+project(Filters)
+		
+set(CURRENT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
+set( PROJECT_INCLUDE_PATH
+	 ${CURRENT_PATH}/include )
+
+file( GLOB_RECURSE PROJECT_SOURCE_FILES
+	  ${CURRENT_PATH}/*.h
+	  ${CURRENT_PATH}/*.hpp
+	  ${CURRENT_PATH}/*.cpp )
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ROOT_PATH}/bld)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ROOT_PATH}/bld)
+
+add_definitions(-D__ENABLE_TEST_CODE__)
+
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_FILES})
+
+target_include_directories( ${PROJECT_NAME}
+							PRIVATE
+							${PROJECT_INCLUDE_PATH} )
