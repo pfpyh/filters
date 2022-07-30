@@ -31,6 +31,7 @@ public :
 
 public :
     Matrix(const int32_t col, const int32_t row);
+    Matrix(const int32_t size);
     Matrix(const Matrix& mat);
     Matrix(Matrix&& mat) noexcept;
     ~Matrix();
@@ -49,14 +50,16 @@ public :
     };
 
     auto print() -> void;
-    auto traversal(std::function<void(const int32_t row, const int32_t col)> func)-> void;
-    auto traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func)-> void;
+    auto traversal(std::function<void(const int32_t row, const int32_t col)> func) -> void;
+    auto traversal(std::function<void(const int32_t row, const int32_t col)> func) const -> void;
+    auto traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) -> void;
+    auto traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) const -> void;
     auto transpose()->Matrix;
     auto inverse()->Matrix;
 };
 #pragma endregion
 /*************************************************************/
-/*                            Operator                       */
+/*                           Operator                        */
 /*************************************************************/
 #pragma region Operator
 template <typename T>
@@ -77,26 +80,35 @@ Matrix<T> operator*(const T& scalar, const Matrix<T>& rhs);
 template <typename T>
 Matrix<T> operator/(const Matrix<T>& lhs, const Matrix<T>& rhs);
 #pragma endregion
-/*************************************************************/
-/*                       Matrix inverse util                 */
-/*************************************************************/
-#pragma region Util
 namespace util
 {
+/*************************************************************/
+/*                         Commom util                       */
+/*************************************************************/
+#pragma region Util.Common
 template <typename T>
-static auto minor(const Matrix<T>& minor_mat, int32_t mat_size, Matrix<T>& new_minor_mat) -> void;
+auto eye(const int32_t col, const int32_t row) -> Matrix<T>;
 
 template <typename T>
-static auto determine(const Matrix<T>& minor_mat, int32_t size) -> T;
+auto eye(const int32_t size) -> Matrix<T>;
+#pragma endregion
+/*************************************************************/
+/*                         Inverse util                      */
+/*************************************************************/
+#pragma region Util.Inverse
+template <typename T>
+auto minor(const Matrix<T>& minor_mat, int32_t mat_size, Matrix<T>& new_minor_mat) -> void;
 
 template <typename T>
-static auto cofactor(const Matrix<T>& minor_mat) -> Matrix<T>;
+auto determine(const Matrix<T>& minor_mat, int32_t size) -> T;
+
+template <typename T>
+auto cofactor(const Matrix<T>& minor_mat) -> Matrix<T>;
 
 template <typename T>
 auto inverse(const Matrix<T>& mat) -> Matrix<T>;
-} // namespace util
 #pragma endregion
-
+} // namespace util
 /*************************************************************/
 /********************** Implementation ***********************/
 /*************************************************************/
@@ -111,6 +123,10 @@ Matrix<T>::Matrix<T>(const int32_t col, const int32_t row)
     for (int32_t x = 0; x < _row; ++x)
         _mat[x] = new T[_col];
 };
+
+template <typename T>
+Matrix<T>::Matrix<T>(const int32_t size)
+    : Matrix(size, size) {};
 
 template <typename T>
 Matrix<T>::Matrix<T>(const Matrix& mat)
@@ -141,9 +157,12 @@ Matrix<T>::Matrix<T>(Matrix&& mat) noexcept
 template <typename T>
 Matrix<T>::~Matrix<T>()
 {
-    for (int32_t row = 0; row < _row; ++row)
-        delete[] _mat[row];
-    delete[] _mat;
+    if (_row > 0)
+    {
+        for (int32_t row = 0; row < _row; ++row)
+            delete[] _mat[row];
+        delete[] _mat;
+    }
 };
 
 template <typename T>
@@ -170,7 +189,23 @@ auto Matrix<T>::traversal(std::function<void(const int32_t row, const int32_t co
 }
 
 template <typename T>
+auto Matrix<T>::traversal(std::function<void(const int32_t row, const int32_t col)> func) const -> void
+{
+    for (int32_t __row = 0; __row < _row; ++__row)
+        for (int32_t __col = 0; __col < _col; ++__col)
+            func(__row, __col);
+}
+
+template <typename T>
 auto Matrix<T>::traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) -> void
+{
+    for (int32_t __row = 0; __row < _row; ++__row)
+        for (int32_t __col = 0; __col < _col; ++__col)
+            func(__row, __col, _mat[__row][__col]);
+}
+
+template <typename T>
+auto Matrix<T>::traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) const -> void
 {
     for (int32_t __row = 0; __row < _row; ++__row)
         for (int32_t __col = 0; __col < _col; ++__col)
@@ -194,7 +229,7 @@ auto Matrix<T>::inverse() -> Matrix<T>
 };
 #pragma endregion
 /*************************************************************/
-/*                            Operator                       */
+/*                           Operator                        */
 /*************************************************************/
 #pragma region Operator
 template <typename T>
@@ -264,7 +299,7 @@ Matrix<T> operator*(const Matrix<T>& lhs, const T& scalar)
 template <typename T>
 Matrix<T> operator*(const T& scalar, const Matrix<T>& rhs)
 {
-    Matrix<T> rhn(rhs._col, rhs._row);
+    Matrix<T> rtn(rhs._col, rhs._row);
     rhs.traversal([&rtn, &scalar](const int32_t row, const int32_t col, const T& value) {
         rtn[row][col] = value * scalar;
     });
@@ -277,12 +312,38 @@ Matrix<T> operator/(const Matrix<T>& lhs, const Matrix<T>& rhs)
     throw "Not implemented";
 };
 #pragma endregion
-/*************************************************************/
-/*                       Matrix inverse util                 */
-/*************************************************************/
-#pragma region Util
 namespace util
 {
+/*************************************************************/
+/*                         Commom util                       */
+/*************************************************************/
+#pragma region Util.Common
+template <typename T>
+auto eye(const int32_t col, const int32_t row) -> Matrix<T>
+{
+    Matrix<T> rtn(col, row);
+    rtn.traversal([&rtn](const int32_t row, const int32_t col) {
+        if (row == col) rtn[row][col] = 1;
+        else rtn[row][col] = 0;
+    });
+    return rtn;
+};
+
+template <typename T>
+auto eye(const int32_t size) -> Matrix<T>
+{
+    Matrix<T> rtn(size, size);
+    rtn.traversal([&rtn](const int32_t row, const int32_t col) {
+        if (row == col) rtn[row][col] = 1;
+        else rtn[row][col] = 0;
+    });
+    return rtn;
+};
+#pragma endregion
+/*************************************************************/
+/*                         Inverse util                      */
+/*************************************************************/
+#pragma region Util.Inverse
 template <typename T>
 auto minor(const Matrix<T>& minor_mat, int32_t mat_size, Matrix<T>& new_minor_mat) -> void
 {
