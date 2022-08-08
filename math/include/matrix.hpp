@@ -26,11 +26,11 @@ private :
     T** _mat = nullptr;
 
 public :
-    const int32_t _col;
     const int32_t _row;
+    const int32_t _col;
 
 public :
-    Matrix(const int32_t col, const int32_t row);
+    Matrix(const int32_t row, const int32_t col);
     Matrix(const int32_t size);
     Matrix(const Matrix& mat);
     Matrix(Matrix&& mat) noexcept;
@@ -87,7 +87,7 @@ namespace util
 /*************************************************************/
 #pragma region Util.Common
 template <typename T>
-auto eye(const int32_t col, const int32_t row) -> Matrix<T>;
+auto eye(const int32_t row, const int32_t col) -> Matrix<T>;
 
 template <typename T>
 auto eye(const int32_t size) -> Matrix<T>;
@@ -116,8 +116,8 @@ auto inverse(const Matrix<T>& mat) -> Matrix<T>;
 /*************************************************************/
 #pragma region Class
 template <typename T>
-Matrix<T>::Matrix<T>(const int32_t col, const int32_t row)
-    : _col(col), _row(row)
+Matrix<T>::Matrix<T>(const int32_t row, const int32_t col)
+    : _row(row), _col(col)
 {
     _mat = new T * [_row];
     for (int32_t x = 0; x < _row; ++x)
@@ -216,7 +216,7 @@ template <typename T>
 auto Matrix<T>::transpose() -> Matrix<T>
 {
     Matrix<T> rtn(_col, _row);
-    traversal([&rtn, this](const int32_t row, const int32_t col, const T& value) {
+    traversal([&rtn](const int32_t row, const int32_t col, const T& value) {
         rtn[col][row] = value;
     });
     return rtn;
@@ -265,9 +265,10 @@ template <typename T>
 Matrix<T> operator*(const Matrix<T>& lhs, const Matrix<T>& rhs)
 {
 #if defined(MATH_EXCEPTION_ENABLE)
-    if (lhs._row != rhs._col || lhs._col != rhs._row)
+    if (lhs._col != rhs._row)
         throw std::out_of_range("Size not matched.");
 #endif
+
     Matrix<T> rtn(lhs._row, rhs._col);
     for (int32_t row = 0; row < lhs._row; ++row)
     {
@@ -277,7 +278,6 @@ Matrix<T> operator*(const Matrix<T>& lhs, const Matrix<T>& rhs)
             for (int32_t x = 1; x < lhs._col; ++x)
             {
                 sum += lhs[row][x] * rhs[x][col];
-                int32_t t = 0;
             }
             rtn[row][col] = sum;
         }
@@ -443,6 +443,6 @@ auto inverse(const Matrix<T>& mat) -> Matrix<T>
         return cofactor(mat);
     }
 };
-} // namespace util
 #pragma endregion
+} // namespace util
 } // namespace math

@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(Filters)
+project(libfilter)
 		
 set(CURRENT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 set( PROJECT_INCLUDE_PATH
+	 ${ROOT_PATH}/math/include
 	 ${CURRENT_PATH}/include )
+	 
+set( PROJECT_DEPENDENCIES 
+	 libmath )
 
 file( GLOB_RECURSE PROJECT_SOURCE_FILES
 	  ${CURRENT_PATH}/*.h
@@ -14,13 +18,12 @@ file( GLOB_RECURSE PROJECT_SOURCE_FILES
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ROOT_PATH}/bld)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ROOT_PATH}/bld)
-
 add_definitions(-D__ENABLE_TEST_CODE__)
 
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_FILES})
+add_library(${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES})
+
+target_link_libraries( ${PROJECT_NAME}
+					   ${PROJECT_DEPENDENCIES} )
 
 target_include_directories( ${PROJECT_NAME}
 							PRIVATE
