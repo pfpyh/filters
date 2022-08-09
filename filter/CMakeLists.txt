@@ -5,6 +5,7 @@ project(libfilter)
 set(CURRENT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 set( PROJECT_INCLUDE_PATH
+     ${COMMON_HEADER_PATH}
 	 ${ROOT_PATH}/math/include
 	 ${CURRENT_PATH}/include )
 	 

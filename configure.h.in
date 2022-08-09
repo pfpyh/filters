@@ -1,0 +1,6 @@
+#pragma once
+
+#cmakedefine01 ENABLE_TEST_CODE
+
+#cmakedefine DATA_PATH "@DATA_PATH@"
+#cmakedefine DATA_OUTPUT_PATH "@DATA_OUTPUT_PATH@"
