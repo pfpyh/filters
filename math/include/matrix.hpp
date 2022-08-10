@@ -54,8 +54,8 @@ public :
     auto traversal(std::function<void(const int32_t row, const int32_t col)> func) const -> void;
     auto traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) -> void;
     auto traversal(std::function<void(const int32_t row, const int32_t col, const T& value)> func) const -> void;
-    auto transpose()->Matrix;
-    auto inverse()->Matrix;
+    auto transpose() const ->Matrix;
+    auto inverse() const ->Matrix;
 };
 #pragma endregion
 /*************************************************************/
@@ -213,7 +213,7 @@ auto Matrix<T>::traversal(std::function<void(const int32_t row, const int32_t co
 }
 
 template <typename T>
-auto Matrix<T>::transpose() -> Matrix<T>
+auto Matrix<T>::transpose() const -> Matrix<T>
 {
     Matrix<T> rtn(_col, _row);
     traversal([&rtn](const int32_t row, const int32_t col, const T& value) {
@@ -223,7 +223,7 @@ auto Matrix<T>::transpose() -> Matrix<T>
 };
 
 template <typename T>
-auto Matrix<T>::inverse() -> Matrix<T>
+auto Matrix<T>::inverse() const -> Matrix<T>
 {
     return util::inverse((*this));
 };

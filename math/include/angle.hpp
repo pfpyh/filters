@@ -18,11 +18,17 @@ public :
     Euler();
     Euler(const double x, const double y, const double z);
     Euler(const Euler& e);
+    Euler(Euler&& e) noexcept;
 
-    auto to_quaternion()->Quaternion;
-    auto to_matrix()->Matrix<double>;
+    auto to_quaternion() noexcept ->Quaternion;
+    auto to_matrix() noexcept ->Matrix<double>;
 
-    static auto from_matrix(const Matrix<double>& m)->Euler;
+    static auto from_matrix(const Matrix<double>& m)->Euler&&;
+    static auto from_acc(const double x, 
+                         const double y, 
+                         const double z) noexcept ->Euler&&;
+    static auto from_acc(const double x,
+                         const double y) noexcept ->Euler&&;
 };
 
 class Quaternion
@@ -36,9 +42,10 @@ public:
     Quaternion();
     Quaternion(const double x, const double y, const double z, const double i);
     Quaternion(const Quaternion& q);
+    Quaternion(Quaternion&& q) noexcept;
 
-    auto to_euler()->Euler;
-    auto to_matrix()->Matrix<double>;
+    auto to_euler() noexcept ->Euler;
+    auto to_matrix() noexcept ->Matrix<double>;
 
     static auto from_matrix(const Matrix<double>& m)->Quaternion;
 };

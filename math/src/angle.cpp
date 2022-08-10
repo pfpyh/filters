@@ -9,8 +9,10 @@ namespace math
 Euler::Euler() {};
 Euler::Euler(const double x, const double y, const double z) : _x(x), _y(y), _z(z) {};
 Euler::Euler(const Euler& e) : _x(e._x), _y(e._y), _z(e._z) {};
+Euler::Euler(Euler&& e) noexcept
+    : _x(std::move(e._x)), _y(std::move(e._y)), _z(std::move(e._z)) {};
 
-auto Euler::to_quaternion() -> Quaternion
+auto Euler::to_quaternion() noexcept -> Quaternion
 {
     Quaternion q;
 
@@ -29,7 +31,7 @@ auto Euler::to_quaternion() -> Quaternion
     return q;
 };
 
-auto Euler::to_matrix() -> Matrix<double>
+auto Euler::to_matrix() noexcept -> Matrix<double>
 {
     Matrix<double> m(3, 1);
     m[0][0] = _x;
@@ -38,18 +40,37 @@ auto Euler::to_matrix() -> Matrix<double>
     return m;
 };
 
-auto Euler::from_matrix(const Matrix<double>& m) -> Euler
+auto Euler::from_matrix(const Matrix<double>& m) -> Euler&&
 {
     if (m._col != 1 || m._row != 3)
         throw std::out_of_range("Matrix size not matched.");
     return Euler(m[0][0], m[1][0], m[2][0]);
 };
 
+auto Euler::from_acc(const double x,
+                     const double y,
+                     const double z) noexcept -> Euler&&
+{
+    Euler e;
+    e._y = std::asin(x / 9.8);
+    e._x = std::asin((-1) * y / (9.8 * std::cos(e._y)));
+    e._z = 0.0;
+    return std::move(e);
+};
+
+auto Euler::from_acc(const double x,
+                     const double y) noexcept -> Euler&&
+{
+    return from_acc(x, y, 0.0);
+};
+
 Quaternion::Quaternion() {};
 Quaternion::Quaternion(const double x, const double y, const double z, const double w) : _x(x), _y(y), _z(z), _w(w) {};
 Quaternion::Quaternion(const Quaternion& q) : _x(q._x), _y(q._y), _z(q._z), _w(q._w) {};
+Quaternion::Quaternion(Quaternion&& q) noexcept
+    : _x(std::move(q._x)), _y(std::move(q._y)), _z(std::move(q._z)), _w(std::move(q._w)) {};
 
-auto Quaternion::to_euler() -> Euler
+auto Quaternion::to_euler() noexcept -> Euler
 {
     Euler e;
 
@@ -79,7 +100,7 @@ auto Quaternion::to_euler() -> Euler
     return e;
 };
 
-auto Quaternion::to_matrix() -> Matrix<double>
+auto Quaternion::to_matrix() noexcept -> Matrix<double>
 {
     Matrix<double> m(4, 1);
     m[0][0] = _x;

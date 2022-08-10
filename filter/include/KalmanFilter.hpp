@@ -7,31 +7,45 @@
 
 namespace math::filters
 {
-class EulerKalmanFilter
+template <typename T>
+class KalmanFilter
 {
-public :
-    struct Data
-    {
-        double _x = 0.0;
-        double _y = 0.0;
-        double _z = 0.0;
-    };
-
 private :
-    Matrix<double> _A;
-    Matrix<double> _H;
-    Matrix<double> _Q;
-    Matrix<double> _R;
-    Matrix<double> _X;
-    Matrix<double> _P;
-
-    bool _first = false;
-
-private:
-    auto acc_to_euler(const Data& acc)->Euler;
+    T _H;
+    T _Q;
+    T _R;
+    T _x;
+    T _P;
+    bool _first = true;
 
 public :
-    EulerKalmanFilter();
-    auto run(const Data& gyr, const Data& acc)->Euler;
+    KalmanFilter(const T& H,
+                 const T& Q,
+                 const T& R,
+                 const T& x,
+                 const T& P)
+        : _H(H), _Q(Q), _R(R), _x(x), _P(P) {};
+
+    auto run(const T& A, const T& z) -> const decltype(_x)&
+    {
+        if (!_first)
+        {
+            // predict
+            auto xp = A * _x;
+            auto Pp = A * _P * A.transpose() + _Q;
+
+            auto tmp1 = A * _P;
+            auto tmp2 = tmp1 * A.transpose();
+
+            // kalman gain
+            auto K = (Pp * _H.transpose()) * util::inverse(_H * Pp * _H.transpose() + _R);
+
+            // estimate
+            _x = xp + K * (z - (_H * xp));
+            _P = Pp - K * _H * Pp;
+        }
+        else _first = false;
+        return _x;
+    };
 };
 } // namespace math::filters
