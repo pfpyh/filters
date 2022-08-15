@@ -11,12 +11,12 @@ template <typename T> class Matrix;
 class Euler
 {
 public :
-    double _x = 0.0;
-    double _y = 0.0;
-    double _z = 0.0;
+    double _roll = 0.0;
+    double _pitch = 0.0;
+    double _yaw = 0.0;
 
     Euler();
-    Euler(const double x, const double y, const double z);
+    Euler(const double roll, const double pitch, const double yaw);
     Euler(const Euler& e);
     Euler(Euler&& e) noexcept;
 
@@ -34,13 +34,13 @@ public :
 class Quaternion
 {
 public:
+    double _w = 0.0;
     double _x = 0.0;
     double _y = 0.0;
     double _z = 0.0;
-    double _w = 0.0;
 
     Quaternion();
-    Quaternion(const double x, const double y, const double z, const double i);
+    Quaternion(const double w, const double x, const double y, const double z);
     Quaternion(const Quaternion& q);
     Quaternion(Quaternion&& q) noexcept;
 

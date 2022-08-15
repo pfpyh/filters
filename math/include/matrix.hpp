@@ -32,6 +32,8 @@ public :
 public :
     Matrix(const int32_t row, const int32_t col);
     Matrix(const int32_t size);
+    Matrix(const int32_t row, const int32_t col, const T[][4]);
+    Matrix(const int32_t size, const T mat[][4]);
     Matrix(const Matrix& mat);
     Matrix(Matrix&& mat) noexcept;
     ~Matrix();
@@ -79,6 +81,9 @@ Matrix<T> operator*(const T& scalar, const Matrix<T>& rhs);
 
 template <typename T>
 Matrix<T> operator/(const Matrix<T>& lhs, const Matrix<T>& rhs);
+
+template <typename T>
+Matrix<T> operator/(const Matrix<T>& lhs, const T& scalar);
 #pragma endregion
 namespace util
 {
@@ -127,6 +132,23 @@ Matrix<T>::Matrix<T>(const int32_t row, const int32_t col)
 template <typename T>
 Matrix<T>::Matrix<T>(const int32_t size)
     : Matrix(size, size) {};
+
+template <typename T>
+Matrix<T>::Matrix<T>(const int32_t row, const int32_t col, const T mat[][4])
+    : _row(row), _col(col)
+{
+    _mat = new T * [_row];
+    for (int32_t row = 0; row < _row; ++row)
+    {
+        _mat[row] = new T[_col];
+        for (int32_t col = 0; col < _col; ++col)
+            _mat[row][col] = mat[row][col];
+    };
+}
+
+template <typename T>
+Matrix<T>::Matrix<T>(const int32_t size, const T mat[][4])
+    : Matrix(size, size, mat) {};
 
 template <typename T>
 Matrix<T>::Matrix<T>(const Matrix& mat)
@@ -311,6 +333,16 @@ Matrix<T> operator/(const Matrix<T>& lhs, const Matrix<T>& rhs)
 {
     throw "Not implemented";
 };
+
+template <typename T>
+Matrix<T> operator/(const Matrix<T>& lhs, const T& scalar)
+{
+    Matrix<T> rtn(lhs);
+    rtn.traversal([&rtn, scalar](const int32_t row, const int32_t col) {
+        rtn[row][col] = rtn[row][col] / scalar;
+    });
+    return rtn;
+};
 #pragma endregion
 namespace util
 {
@@ -440,7 +472,8 @@ auto inverse(const Matrix<T>& mat) -> Matrix<T>
     }
     else
     {
-        return cofactor(mat);
+        auto inv_m = cofactor(mat) / determinate;
+        return inv_m;
     }
 };
 #pragma endregion

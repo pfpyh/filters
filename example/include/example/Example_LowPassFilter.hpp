@@ -14,7 +14,7 @@ auto example_lpf() -> void
     {
         constexpr double x0 = 0.0;
         constexpr double alpha = 0.4;
-        filters::LowPassFilter<double> lpf(x0, alpha);
+        filters::LowPassFilter<double> lpf(x0,   alpha);
 
         constexpr uint32_t sample_count = 500;
         CSV csv(SONAR_ALT_CSV);

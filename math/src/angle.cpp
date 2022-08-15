@@ -7,26 +7,33 @@ namespace math
 {
 
 Euler::Euler() {};
-Euler::Euler(const double x, const double y, const double z) : _x(x), _y(y), _z(z) {};
-Euler::Euler(const Euler& e) : _x(e._x), _y(e._y), _z(e._z) {};
+Euler::Euler(const double roll, const double pitch, const double yaw) 
+    : _roll(roll), _pitch(pitch), _yaw(yaw) {};
+Euler::Euler(const Euler& e) 
+    : _roll(e._roll), _pitch(e._pitch), _yaw(e._yaw) {};
 Euler::Euler(Euler&& e) noexcept
-    : _x(std::move(e._x)), _y(std::move(e._y)), _z(std::move(e._z)) {};
+    : _roll(std::move(e._roll)), _pitch(std::move(e._pitch)), _yaw(std::move(e._yaw)) {};
 
 auto Euler::to_quaternion() noexcept -> Quaternion
 {
     Quaternion q;
 
-    const double sin_x = std::sin(_x / 2);
-    const double cos_x = std::cos(_x / 2);
-    const double sin_y = std::sin(_y / 2);
-    const double cos_y = std::cos(_y / 2);
-    const double sin_z = std::sin(_z / 2);
-    const double cos_z = std::cos(_z / 2);
+    /*q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;*/
 
-    q._x = (cos_x * cos_y * cos_z) + (sin_x * sin_y * sin_z);
-    q._y = (sin_x * cos_y * cos_z) - (cos_x * sin_y * sin_z);
-    q._z = (cos_x * sin_y * cos_z) + (sin_x * cos_y * sin_z);
-    q._w = (cos_x * cos_y * sin_z) - (sin_x * sin_y * cos_z);
+    const double sr = std::sin(_roll / 2);
+    const double cr = std::cos(_roll / 2);
+    const double sp = std::sin(_pitch / 2);
+    const double cp = std::cos(_pitch / 2);
+    const double sy = std::sin(_yaw / 2);
+    const double cy = std::cos(_yaw / 2);
+
+    q._w = (cr * cp * cy) + (sr * sp * sy);
+    q._x = (sr * cp * cy) - (cr * sp * sy);
+    q._y = (cr * sp * cy) + (sr * cp * sy);
+    q._z = (cr * cp * sy) - (sr * sp * cy);
 
     return q;
 };
@@ -34,9 +41,9 @@ auto Euler::to_quaternion() noexcept -> Quaternion
 auto Euler::to_matrix() noexcept -> Matrix<double>
 {
     Matrix<double> m(3, 1);
-    m[0][0] = _x;
-    m[1][0] = _y;
-    m[2][0] = _z;
+    m[0][0] = _roll;
+    m[1][0] = _pitch;
+    m[2][0] = _yaw;
     return m;
 };
 
@@ -52,9 +59,9 @@ auto Euler::from_acc(const double x,
                      const double z) noexcept -> Euler&&
 {
     Euler e;
-    e._y = std::asin(x / 9.8);
-    e._x = std::asin((-1) * y / (9.8 * std::cos(e._y)));
-    e._z = 0.0;
+    e._pitch = std::asin(x / 9.8);
+    e._roll = std::asin((-1) * y / (9.8 * std::cos(e._pitch)));
+    e._yaw = 0.0;
     return std::move(e);
 };
 
@@ -65,7 +72,7 @@ auto Euler::from_acc(const double x,
 };
 
 Quaternion::Quaternion() {};
-Quaternion::Quaternion(const double x, const double y, const double z, const double w) : _x(x), _y(y), _z(z), _w(w) {};
+Quaternion::Quaternion(const double w, const double x, const double y, const double z) : _w(w), _x(x), _y(y), _z(z) {};
 Quaternion::Quaternion(const Quaternion& q) : _x(q._x), _y(q._y), _z(q._z), _w(q._w) {};
 Quaternion::Quaternion(Quaternion&& q) noexcept
     : _x(std::move(q._x)), _y(std::move(q._y)), _z(std::move(q._z)), _w(std::move(q._w)) {};
@@ -74,11 +81,12 @@ auto Quaternion::to_euler() noexcept -> Euler
 {
     Euler e;
 
+#if 0
     //t0 = +2.0 * (w * x + y * z)
     //    t1 = +1.0 - 2.0 * (x * x + y * y)
     //    roll_x = math.atan2(t0, t1)
     const double t0 = 2.0 * (_w * _x + _y * _z);
-    const double t1 = 2.0 * (_x * _y + _y * _y);
+    const double t1 = 1.0 - 2.0 * (_x * _x + _y * _y);
     e._x = std::atan2(t0, t1);
 
     //    t2 = +2.0 * (w * y - z * x)
@@ -96,6 +104,21 @@ auto Quaternion::to_euler() noexcept -> Euler
     const double t3 = 2.0 * (_w * _z + _x * _y);
     const double t4 = 1.0 - 2.0 * (_y * _y - _z * _z);
     e._z = std::atan2(t3, t4);
+#else
+    /*phi = atan2(2 * (_y * _z + _w * _x), 1 - 2 * (_x * *2 + _y * *2))
+    theta = -asin(2 * (_x * _z - _w * _y))
+    psi = atan2(2 * (_x * _y + _w * _z), 1 - 2 * (_y * *2 + _z * *2))*/
+    const double t0 = 2.0 * (_y * _z + _w * _x);
+    const double t1 = 1.0 - 2.0 * (_x * _x + _y * _y);
+    e._roll = std::atan2(t0, t1);
+
+    const double t2 = 2.0 * (_x * _z - _w * _y);
+    e._pitch = (-1.0) * std::asin(t2);
+
+    const double t3 = 2.0 * (_x * _y + _w * _z);
+    const double t4 = 1.0 - 2.0 * (_y * _y + _z * _z);
+    e._yaw = std::atan2(t3, t4);
+#endif
 
     return e;
 };
@@ -103,10 +126,10 @@ auto Quaternion::to_euler() noexcept -> Euler
 auto Quaternion::to_matrix() noexcept -> Matrix<double>
 {
     Matrix<double> m(4, 1);
-    m[0][0] = _x;
-    m[1][0] = _y;
-    m[2][0] = _z;
-    m[3][0] = _w;
+    m[0][0] = _w;
+    m[1][0] = _x;
+    m[2][0] = _y;
+    m[3][0] = _z;
     return m;
 };
 

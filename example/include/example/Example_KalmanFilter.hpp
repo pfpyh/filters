@@ -1,6 +1,7 @@
 #pragma once
 #include "KalmanFilter.hpp"
 #include "CSV.hpp"
+#include <cstdlib>
 
 namespace math::example
 {
@@ -48,6 +49,7 @@ public :
 
         auto q(Quaternion::from_matrix(x));
         auto e(q.to_euler());
+        std::cout << "phi=" << std::to_string(e._roll) << "/theta=" << std::to_string(e._pitch) << "/psi=" << std::to_string(e._yaw) << std::endl;
         return std::move(e);
     };
 };
@@ -84,9 +86,9 @@ auto example_kf() -> void
 
         constexpr double df = 180 / 3.14;
 
-        auto phi = e._x * df;
-        auto theta = e._y * df;
-        auto psi = e._z * df;
+        auto phi = e._roll * df;
+        auto theta = e._pitch * df;
+        auto psi = e._yaw * df;
 
         std::vector<std::string> output;
         output.push_back(std::to_string(phi));

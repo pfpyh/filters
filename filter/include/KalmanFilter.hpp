@@ -34,9 +34,6 @@ public :
             auto xp = A * _x;
             auto Pp = A * _P * A.transpose() + _Q;
 
-            auto tmp1 = A * _P;
-            auto tmp2 = tmp1 * A.transpose();
-
             // kalman gain
             auto K = (Pp * _H.transpose()) * util::inverse(_H * Pp * _H.transpose() + _R);
 
